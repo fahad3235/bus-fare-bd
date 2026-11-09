@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bus Fare BD - Official BRTA bus fares for Bangladesh</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <h1 id="title" data-i18n="title">Bus Fare BD</h1>
+    <p class="subtitle" data-i18n="subtitle">Official BRTA bus fares for Bangladesh &mdash; enter a distance and see the fare in taka.</p>
+  </div>
+  <button id="langBtn" type="button">Bangla</button>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button id="tabbtn-calc" class="tab active" type="button" data-i18n="tabCalc">Calculate</button>
+  <button id="tabbtn-compare" class="tab" type="button" data-i18n="tabCompare">Compare</button>
+  <button id="tabbtn-routes" class="tab" type="button" data-i18n="tabRoutes">Routes</button>
+  <button id="tabbtn-rates" class="tab" type="button" data-i18n="tabRates">Rates</button>
+  <button id="tabbtn-history" class="tab" type="button" data-i18n="tabHistory">History</button>
+</nav>
+
+<main>
+  <!-- CALCULATE -->
+  <section id="tab-calc" class="panel">
+    <div class="card">
+      <label for="distInput" data-i18n="distance">Distance (km)</label>
+      <input id="distInput" type="number" min="0.1" max="2000" step="0.1" value="10" inputmode="decimal">
+      <label for="typeSel" data-i18n="serviceType">Service type</label>
+      <select id="typeSel"></select>
+      <label class="check"><input id="roundTripChk" type="checkbox"> <span data-i18n="roundTrip">Return trip (&times;2)</span></label>
+      <label for="paxInput" data-i18n="passengers">Passengers</label>
+      <input id="paxInput" type="number" min="1" max="10" step="1" value="1" inputmode="numeric">
+      <button id="calcBtn" class="primary" type="button" data-i18n="calculate">Calculate fare</button>
+      <p id="calcError" class="error" hidden></p>
+    </div>
+
+    <div id="resultBox" class="card" hidden>
+      <h2 data-i18n="resultTitle">One-way fare</h2>
+      <p id="resTotal" class="big"></p>
+      <table class="kv"><tbody id="resRows"></tbody></table>
+      <p id="resRate" class="hint"></p>
+      <p id="minNote" class="note warn" data-i18n="minNote" hidden>Minimum fare applied</p>
+      <label for="calcLabel" class="sr-only">Label</label>
+      <input id="calcLabel" type="text" maxlength="80" data-i18n-ph="labelPlaceholder" placeholder="Label (optional, e.g. Office commute)">
+      <button id="saveCalcBtn" class="primary" type="button" data-i18n="saveCalc">Save this calculation</button>
+      <p id="savedMsg" class="ok" data-i18n="savedMsg" hidden>Saved to history.</p>
+    </div>
+
+    <div class="card info">
+      <h2 data-i18n="infoTitle">About these fares</h2>
+      <p data-i18n="infoBody">Rates are the official BRTA fares from the gazette notification of 23 September 2026 (effective 22 September 2026) for diesel-run buses and minibuses. Gas-run buses are not covered. Fares are rounded to the nearest whole taka and the minimum fare applies to short trips. Actual fares can differ if an operator charges a different rate &mdash; check the fare chart in the bus.</p>
+      <p class="note warn" data-i18n="dieselNote">Diesel-run buses only &mdash; gas-run buses are not covered by these rates.</p>
+    </div>
+  </section>
+
+  <!-- COMPARE -->
+  <section id="tab-compare" class="panel" hidden>
+    <div class="card">
+      <h2 data-i18n="compareTitle">Compare all services</h2>
+      <p class="hint" data-i18n="compareHint">Same distance, every service type &mdash; cheapest first.</p>
+      <label for="cmpDist" data-i18n="distance">Distance (km)</label>
+      <input id="cmpDist" type="number" min="0.1" max="2000" step="0.1" value="10" inputmode="decimal">
+      <button id="cmpBtn" class="primary" type="button" data-i18n="compareTitle">Compare all services</button>
+      <p id="cmpError" class="error" hidden></p>
+      <table class="data">
+        <thead><tr>
+          <th data-i18n="colService">Service</th>
+          <th data-i18n="colRate">Rate / km</th>
+          <th data-i18n="colMin">Min. fare</th>
+          <th data-i18n="colFare">Fare</th>
+        </tr></thead>
+        <tbody id="cmpBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ROUTES -->
+  <section id="tab-routes" class="panel" hidden>
+    <div class="card">
+      <h2 data-i18n="routesTitle">Popular routes from Dhaka</h2>
+      <p class="hint" data-i18n="routesHint">Approximate road distances (shortest route, Roads &amp; Highways Department matrix). Tap a route to load it into the calculator.</p>
+      <table class="data">
+        <thead><tr>
+          <th data-i18n="colRoute">Route</th>
+          <th data-i18n="colDistance">Distance</th>
+          <th data-i18n="colFare">Fare</th>
+          <th><span class="sr-only">Load</span></th>
+        </tr></thead>
+        <tbody id="routeRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RATES -->
+  <section id="tab-rates" class="panel" hidden>
+    <div class="card">
+      <h2 data-i18n="ratesTitle">Fare rates (Tk per km)</h2>
+      <p class="hint" data-i18n="ratesHint">Official gazette rates of 22 September 2026. Edit them if BRTA revises the fares &mdash; they are stored only on your device.</p>
+      <table class="data">
+        <thead><tr>
+          <th data-i18n="colService">Service</th>
+          <th data-i18n="colRate">Rate / km</th>
+          <th data-i18n="colMin">Min. fare</th>
+        </tr></thead>
+        <tbody id="rateRows"></tbody>
+      </table>
+      <p id="ratesMsg" class="ok" data-i18n="ratesMsg" hidden>Rates saved.</p>
+      <button id="saveRatesBtn" class="primary" type="button" data-i18n="saveRates">Save rates</button>
+      <button id="resetRatesBtn" type="button" data-i18n="resetRates">Reset to gazette defaults</button>
+    </div>
+    <div class="card">
+      <h2 data-i18n="historyTitle">Rate history</h2>
+      <table class="data">
+        <thead><tr>
+          <th data-i18n="colDate">Date</th>
+          <th>City bus</th>
+          <th>City minibus</th>
+          <th>DTCA</th>
+          <th>Inter-district</th>
+        </tr></thead>
+        <tbody id="histRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- HISTORY / DATA -->
+  <section id="tab-history" class="panel" hidden>
+    <div class="card">
+      <h2 data-i18n="histTitle">Saved calculations</h2>
+      <p id="histEmpty" class="hint" data-i18n="histEmpty">No saved calculations yet.</p>
+      <table id="histTable" class="data" hidden>
+        <thead><tr>
+          <th data-i18n="colDate">Date</th>
+          <th data-i18n="colLabel">Label</th>
+          <th data-i18n="colDistance">Distance</th>
+          <th data-i18n="colTotal">Total</th>
+          <th data-i18n="colDelete">Delete</th>
+        </tr></thead>
+        <tbody id="histBody"></tbody>
+      </table>
+      <p><span data-i18n="rowTotal">Total</span>: <strong id="histTotal"></strong></p>
+      <div id="histChart"></div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="exportTitle">Export / import</h2>
+      <div class="row">
+        <button id="exportBtn" type="button" data-i18n="exportBtn">Export JSON</button>
+        <button id="importBtn" type="button" data-i18n="importBtn">Import JSON</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+      </div>
+      <p id="importMsg" hidden></p>
+      <label for="eraseInput" data-i18n="eraseConfirm">Type DELETE to erase all saved data and reset rates.</label>
+      <div class="row">
+        <input id="eraseInput" type="text" maxlength="10" placeholder="DELETE">
+        <button id="eraseBtn" class="danger" type="button" data-i18n="eraseBtn">Erase all data</button>
+      </div>
+      <p id="eraseMsg" class="ok" hidden></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Bus Fare BD &mdash; offline bus fare calculator for Bangladesh. Rates: BRTA gazette notification, 23 September 2026 (effective 22 September 2026), diesel-run buses and minibuses only. Route distances are approximate (Roads &amp; Highways Department matrix, shortest route). Fares are rounded to the nearest whole taka. This is a personal estimator, not an official BRTA app &mdash; verify the fare chart in the bus before paying.</p>
+</footer>
+
+<script src="js/logic.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
